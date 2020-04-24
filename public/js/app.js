@@ -533,7 +533,7 @@ app.controller('ProtectedController', function($scope, $localStorage, $location,
         url: '/protected'
     })
         .success(function(response){
-            $scope.message = 'As of '+(new Date());
+            $scope.message = 'As of '+(new Date())+'.  Please widen your browser window for better viewing.';
             var length=(response&&response.length)||0;
             // chartConfig1: County: {name:'Santa Clara', y: count}
             // chartConfig2: Help Type: {name:'Food', y: count}
