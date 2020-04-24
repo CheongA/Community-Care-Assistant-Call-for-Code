@@ -4,7 +4,7 @@
  Dependencies
  ********************************/
 var mongoose = require('mongoose'),
-    bcrypt = require('bcrypt');
+    bcrypt = require('bcryptjs');
 
 /********************************
  Create User Account Schema
