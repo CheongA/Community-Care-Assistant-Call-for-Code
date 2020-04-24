@@ -14,13 +14,14 @@ var express = require('express'),// server middleware
     cookieParser = require('cookie-parser'),
     session = require('express-session'),
     MongoStore = require('connect-mongo')(session), // store sessions in MongoDB for persistence
-    bcrypt = require('bcrypt'), // middleware to encrypt/decrypt passwords
+    bcrypt = require('bcryptjs'), // middleware to encrypt/decrypt passwords
     sessionDB,
 
     cfenv = require('cfenv'),// Cloud Foundry Environment Variables
     appEnv = cfenv.getAppEnv(),// Grab environment variables
 
-    User = require('./server/models/user.model');
+    User = require('./server/models/user.model'),
+    Need = require('./server/models/need.model');
 
 
 /********************************
@@ -292,10 +293,13 @@ app.post('/account/update', authorizeRequest, function(req,res){
 });
 
 // Account logout
-app.get('/account/logout', function(req,res){
+//app.get('/account/logout', function(req,res){
+app.post('/account/logout', function(req,res){
 
     // Destroys user's session
-    if (!req.user)
+    //console.log('body: ', req.body);
+    //if (!req.user)
+    if (!req.body||!req.body.user) // HACK
         res.status(400).send('User not logged in.');
     else {
         req.session.destroy(function(err) {
@@ -306,12 +310,28 @@ app.get('/account/logout', function(req,res){
             }
             res.status(200).send('Success logging user out!');
         });
+        // TEST
+        //var need = new Need({
+            //phone: '415-555-1212',
+            //receivedAt: (new Date()),
+            //need: 'Hot Meals',
+            //category: 'Food'
+        //});
+        //need.save(function(err) {
+            //if (err) {
+                //console.log('Error saving need:', err);
+                //return;
+            //}
+            //console.log('need saved');
+        //});
     }
 });
 
 // Custom middleware to check if user is logged-in
 function authorizeRequest(req, res, next) {
-    if (req.user) {
+    //console.log('body: ', req.body);
+    //if (req.user) {
+    if (req.body&&req.body.user) { // HACK
         next();
     } else {
         res.status(401).send('Unauthorized. Please login.');
@@ -319,8 +339,40 @@ function authorizeRequest(req, res, next) {
 }
 
 // Protected route requiring authorization to access.
-app.get('/protected', authorizeRequest, function(req, res){
-    res.send("This is a protected route only visible to authenticated users.");
+//app.get('/protected', authorizeRequest, function(req, res){
+app.post('/protected', authorizeRequest, function(req, res){
+    /*
+    var rowData = [
+      {make: "Toyota", model: "Celica", price: 25000},
+      {make: "Toyota", model: "Supra", price: 55000},
+      {make: "Toyota", model: "Camry", price: 30000},
+      {make: "Ford", model: "Mondeo", price: 32000},
+      {make: "Ford", model: "Cortina", price: 42000},
+      {make: "Ford", model: "Granada", price: 92000},
+      {make: "Ford", model: "Escort", price: 22000},
+      {make: "Ford", model: "Mondeo", price: 32000},
+      {make: "Porsche", model: "Boxter", price: 72000}
+    ];
+    var rowData = [
+      {phone: "415-555-1212", receivedAt: "1-2-2020", need: 'Food Banks', category: 'Food'},
+      {phone: "415-555-1212", receivedAt: "1-5-2020", need: 'Brown Bag', category:'Food'},
+      {phone: "415-555-1212", receivedAt: "2-1-2020", need: 'Homeless Shelter', category:'Food'},
+      {phone: "408-555-1212", receivedAt: "1-20-2020", need: 'Rent Payments', category: 'Financial Assistance'},
+      {phone: "408-555-1212", receivedAt: "1-4-2020", need: 'Electric Bill Payments', category: 'Financial Assistance'},
+    ];
+    */
+    //res.send("This is a protected route only visible to authenticated users.");
+    //res.json(rowData);
+    Need.find({ }, null, {sort: {receivedAt: -1}}, function(err, needs) {
+        if (err) {
+            console.log(err);
+            return res.status(400).send('Error retrieving data.');
+        }
+        // if we fine only one, make it an array
+        if (needs && needs.phone && !Array.isArray(needs))
+            needs = [needs];
+        res.json(needs);
+    });
 });
 
 /********************************
