@@ -59,7 +59,7 @@ app.controller('LoginController', function($scope, $localStorage, $sessionStorag
                 // $localStorage persists data in browser's local storage (prevents data loss on page refresh)
                 $localStorage.status = true;
                 $localStorage.user = response;
-                $location.path('/');
+                $location.path('/protected');
             })
             .error(function(){
                 alert('Login failed. Check username/password and try again.');
