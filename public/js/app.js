@@ -1,6 +1,13 @@
 // See LICENSE.MD for license information.
 
-var app = angular.module('MEANapp', ['ngRoute', 'ngStorage']);
+// add angular grid
+// https://www.ag-grid.com/best-angularjs-grid/
+// https://plnkr.co/edit/?p=preview&preview
+agGrid.initialiseAgGridWithAngular1(angular);
+
+//var app = angular.module('MEANapp', ['ngRoute', 'ngStorage']);
+var app = angular.module('MEANapp', ['ngRoute', 'ngStorage', 'agGrid', 'highcharts-ng']);
+//var app = angular.module('MEANapp', ['ngRoute', 'ngStorage', 'agGrid']);
 
 /*********************************
  Controllers
@@ -14,7 +21,9 @@ app.controller('HeaderController', function($scope, $localStorage, $sessionStora
     // Logout function
     $scope.logout = function(){
         $http({
-            method: 'GET',
+            //method: 'GET',
+            method: 'POST',
+            data: $localStorage,
             url: '/account/logout'
         })
             .success(function(response){
@@ -199,14 +208,383 @@ app.controller('AccountController', function($scope, $localStorage, $sessionStor
     };
 });
 
-app.controller('ProtectedController', function($scope, $location, $http){
+app.controller('ProtectedController', function($scope, $localStorage, $location, $http){
+  $scope.chartConfig3 = {
+    chart: {
+      height: 400,
+      width: 450,
+      backgroundColor: 'transparent'
+    },
+    credits: {
+      enabled: false
+    },
+    navigator: {
+      enabled: true,
+      series: {
+        data: []
+      }
+    },
+    plotOptions: {
+      series: {
+        lineWidth: 1,
+        fillOpacity: 0.5
+
+      },
+      column: {
+        stacking: 'normal'
+      },
+      area: {
+        stacking: 'normal',
+        marker: {
+          enabled: false
+        }
+      }
+    },
+    exporting: false,
+    xAxis: [{
+      type: 'datetime'
+    }],
+    yAxis: [
+      { // Primary yAxis
+
+        min: 0,
+        allowDecimals: false,
+        title: {
+          text: 'Number of Helps',
+          style: {
+            color: '#80a3ca'
+          }
+        },
+        labels: {
+          format: '{value}',
+          style: {
+            color: '#80a3ca'
+          }
+        }
+      }
+    ],
+    title: {
+      text: 'Helps over Time'
+    },
+    loading: false,
+    legend: {enabled:true},
+    tooltip: {
+      crosshairs: [
+        {
+          width: 1,
+          dashStyle: 'dash',
+          color: '#898989'
+        },
+        {
+          width: 1,
+          dashStyle: 'dash',
+          color: '#898989'
+        }
+      ],
+      headerFormat: '<div class="header">{point.key}</div>',
+      pointFormat: '<div class="line"><div class="circle" style="background-color:{series.color};float:left;margin-left:10px!important;clear:left;"></div><p class="country" style="float:left;">{series.name}</p><p>{point.y:,.0f} {series.tooltipOptions.valueSuffix} </p></div>',
+      borderWidth: 1,
+      borderRadius: 5,
+      borderColor: '#a4a4a4',
+      shadow: false,
+      useHTML: true,
+      percentageDecimals: 2,
+      backgroundColor: "rgba(255,255,255,.7)",
+      style: {
+        padding: 0
+      },
+      shared: true
+    },
+    series: [
+      {
+        id: 'Food',
+        name: 'Food: ',
+        data: [[1426204800000, 22], [1426464000000, 16], [1426550400000, 10], [1426636800000, 13]],
+        type: 'column',
+        yAxis: 0,
+        //color: '#40a3da'
+      },
+      {
+        id: 'Shelter',
+        name: 'Shelter: ',
+        data: [[1426204800000, 12], [1426464000000, 6], [1426550400000, 10], [1426636800000, 3]],
+        type: 'column',
+        yAxis: 0,
+        //color: '#80a3ca'
+      }
+    ]
+  };
+
+  $scope.chartConfig2 = {
+    chart: {
+        width:450,
+        height:400,
+        plotBackgroundColor: null,
+        plotBorderWidth: null,
+        plotShadow: false,
+        type: 'pie'
+    },
+    credits: {
+      enabled: false
+    },
+    title: {
+        text: 'Helps by Type'
+    },
+    tooltip: {
+        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+    },
+    accessibility: {
+        point: {
+            valueSuffix: '%'
+        }
+    },
+    plotOptions: {
+        pie: {
+            allowPointSelect: true,
+            cursor: 'pointer',
+            dataLabels: {
+                enabled: true,
+                format: '<b>{point.name}</b>: {point.percentage:.1f} %'
+            }
+        }
+    },
+    series: [{
+        name: 'Help Type',
+        colorByPoint: true,
+        data: [{
+            name: 'Food',
+            y: 61.41,
+            sliced: true,
+            selected: true
+        }, {
+            name: 'Shelter',
+            y: 11.84
+        }, {
+            name: 'Transportation',
+            y: 10.85
+        }, {
+            name: 'COVID',
+            y: 4.67
+        }, {
+            name: 'Financial',
+            y: 4.18
+        }, {
+            name: 'Addiction',
+            y: 1.64
+        }, {
+            name: 'Counseling',
+            y: 1.6
+        }, {
+            name: 'Healthcare',
+            y: 1.2
+        }, {
+            name: 'Other',
+            y: 2.61
+        }]
+    }]
+   };
+
+    // specify the columns
+    var columnDefs = [
+      {headerName: "Phone", field: "phone", rowGroup:true},
+      {headerName: "Date", field: "receivedAt"},
+      {headerName: "Type", field: "category"},
+      {headerName: "Text", field: "source"}
+    ];
+  $scope.chartConfig1 = {
+    chart: {
+        width:450,
+        height:400,
+        plotBackgroundColor: null,
+        plotBorderWidth: null,
+        plotShadow: false,
+        type: 'pie'
+    },
+    credits: {
+      enabled: false
+    },
+    title: {
+        text: 'Helps by County'
+    },
+    tooltip: {
+        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+    },
+    accessibility: {
+        point: {
+            valueSuffix: '%'
+        }
+    },
+    plotOptions: {
+        pie: {
+            allowPointSelect: true,
+            cursor: 'pointer',
+            dataLabels: {
+                enabled: true,
+                format: '<b>{point.name}</b>: {point.percentage:.1f} %'
+            }
+        }
+    },
+    series: [{
+        name: 'County',
+        colorByPoint: true,
+        data: [{
+            name: 'Chrome',
+            y: 61.41,
+            sliced: true,
+            selected: true
+        }, {
+            name: 'Santa Clara',
+            y: 11.84
+        }, {
+            name: 'San Francisco',
+            y: 10.85
+        }, {
+            name: 'San Mateo',
+            y: 4.67
+        }, {
+            name: 'Alameda',
+            y: 4.18
+        }, {
+            name: 'Contra Costa',
+            y: 1.64
+        }, {
+            name: 'Marin',
+            y: 1.6
+        }, {
+            name: 'Yolo',
+            y: 1.2
+        }, {
+            name: 'Other',
+            y: 2.61
+        }]
+    }]
+   };
+
+    // specify the columns
+    var columnDefs = [
+      {headerName: "Phone", field: "phone", hide:true, rowGroup:true},
+      //{headerName: "Date", field: "receivedAt", maxWidth:150},
+      {headerName: "Type", field: "category"},
+      {headerName: "Text", field: "source"},
+      {headerName: "City", field: "city"},
+      {headerName: "County", field: "county"}
+    ];
+    /*
+    var columnDefs = [
+      {headerName: "Make", field: "make", rowGroup:true},
+      //{headerName: "Model", field: "model"},
+      {headerName: "Price", field: "price"}
+    ];
+    */
+
+    var autoGroupColumnDef = {
+      sort:'desc',
+      headerName: "",
+      field: "receivedAt",
+      cellRenderer:'agGroupCellRenderer',
+      comparator: function(valueA, valueB, nodeA, nodeB, isInverted) {
+        //console.log('A: ',nodeA);
+        //console.log('B: ',nodeB);
+        //return valueA - valueB;
+        return nodeA.allChildrenCount - nodeB.allChildrenCount;
+      },
+      sortable:true,
+      cellRendererParams: {
+        checkbox: false
+      }
+    };
+    /*
+    var autoGroupColumnDef = {
+      headerName: "Model",
+      field: "model",
+      cellRenderer:'agGroupCellRenderer',
+      cellRendererParams: {
+        checkbox: true
+      }
+    };
+    */
+
+    // specify the data
+    /*var rowData = [
+      {make: "Toyota", model: "Celica", price: 25000},
+      {make: "Toyota", model: "Supra", price: 55000},
+      {make: "Toyota", model: "Camry", price: 30000},
+      {make: "Ford", model: "Mondeo", price: 32000},
+      {make: "Ford", model: "Cortina", price: 42000},
+      {make: "Ford", model: "Granada", price: 92000},
+      {make: "Ford", model: "Escort", price: 22000},
+      {make: "Ford", model: "Mondeo", price: 32000},
+      {make: "Porsche", model: "Boxter", price: 72000}
+    ];*/
+
+    // let the grid know which columns and what data to use
+    $scope.gridOptions = {
+      columnDefs: columnDefs,
+      autoGroupColumnDef: autoGroupColumnDef,
+      groupSelectsChildren: true,
+      rowSelection: 'multiple'
+      //,rowData: rowData
+    };
 
     $http({
-        method: 'GET',
+        //method: 'GET',
+        method: 'POST',
+        data: $localStorage,
         url: '/protected'
     })
         .success(function(response){
-            $scope.message = response;
+            $scope.message = 'As of '+(new Date());
+            var length=(response&&response.length)||0;
+            // chartConfig1: County: {name:'Santa Clara', y: count}
+            // chartConfig2: Help Type: {name:'Food', y: count}
+            // chartConfig3: County: [{}, {}] where {} looks like:
+            //{
+              //id: 'Food',
+              //name: 'Food: ',
+              //data: [[1426204800000, 22], [1426464000000, 16], [1426550400000, 10], [1426636800000, 13]],
+              //type: 'column',
+              //yAxis: 0,
+              //color: '#40a3da'
+            //},
+            var county={}, helpType={};
+            for(var i=0, d, dateV; i<length;i++) {
+                d = response[i];
+                d.receivedAt = moment(d.receivedAt).format('L');
+                dateV = moment(new Date(d.receivedAt /*no time, just date*/)).valueOf() +'';
+                if (county[d.county]) 
+                    county[d.county]+=1;
+                else
+                    county[d.county]=1;
+                if (helpType[d.category]) {
+                    if (helpType[d.category][dateV])
+                        helpType[d.category][dateV]+=1;
+                    else
+                        helpType[d.category][dateV]=1;
+                }
+                else {
+                    helpType[d.category]={};
+                    helpType[d.category][dateV]=1;
+                }
+            }
+            var countyData=[];
+            for(var k in county) {
+                countyData.push({name:k, y:county[k]})
+            }
+            var helpTypeData=[], helpTypeDateData=[];
+            for(var k in helpType) {
+                var data=[], cnt=0;
+                for(var dateV in helpType[k]) {
+                    data.push([parseInt(dateV), helpType[k][dateV]]);
+                    cnt += helpType[k][dateV];
+                }
+                helpTypeDateData.push({id:k, name:k, type:'column', data:data});
+                helpTypeData.push({name:k, y:cnt});
+            }
+            $scope.chartConfig1.getChartObj().series[0].setData(countyData);
+            $scope.chartConfig2.getChartObj().series[0].setData(helpTypeData);
+            // https://www.highcharts.com/forum/viewtopic.php?t=40780
+            $scope.chartConfig3.getChartObj().update({series:helpTypeDateData}, true, true);
+            $scope.gridOptions.api.setRowData(response);
         })
         .error(function(response){
             alert(response);
