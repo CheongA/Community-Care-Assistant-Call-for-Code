@@ -38,7 +38,7 @@
     "express": "^4.15.x",
     "express-session": "^1.12.1",
     "express-validator": "^2.18.0",
-    "highcharts": "^8.0.4",
+    "highcharts": "^8.1.1",
     "highcharts-ng": "^1.2.1",
     "mongoose": "^5.1.0",
     "passport": "^0.4.0",
